@@ -38,7 +38,7 @@ jobs:
             cd $APP_DIR
 
             echo "🐳 Building Docker image..."
-            docker build -t ai-service:latest .
+            docker build -t bodylog-AI:latest .
 
             echo "🚀 Restarting container..."
             docker stop ai-service || true
