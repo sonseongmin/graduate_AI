@@ -23,7 +23,7 @@ jobs:
             set -e
 
             REPO_URL="https://github.com/sonseongmin/graduate_AI.git"
-            APP_DIR="~/ai-service"
+            APP_DIR="/home/ubuntu/graduate_AI"
 
             if [ ! -d "$APP_DIR" ]; then
               echo "📥 Cloning repository..."
