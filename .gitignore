@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+env/
+venv/
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Large files
+*.mp4
+*.json
+*.tar
+*.zip
+*.onnx
+*.pt
+*.ckpt
+
+# Cache
+.cache/
+hf_cache/
+
+# Exercise videos
+exercise_video/
