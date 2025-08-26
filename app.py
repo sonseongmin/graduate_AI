@@ -24,9 +24,20 @@ async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        result = analyze_video(tmp_path, exercise)
-        if "error" in result:
-            raise HTTPException(status_code=400, detail=result["error"])
+        raw_result = analyze_video(tmp_path, exercise)
+
+        if "error" in raw_result:
+            raise HTTPException(status_code=400, detail=raw_result["error"])
+
+        # ✅ AnalyzeResult 스키마에 맞춰 변환
+        result = AnalyzeResult(
+            exercise_name=exercise,
+            count_total=raw_result.get("count_total", 0),
+            count_incorrect=raw_result.get("count_incorrect", 0),
+            feedback=raw_result.get("feedback", "분석 결과 없음"),
+            elapsed_time=raw_result.get("elapsed_time", 0.0),
+        )
+
         return result
     finally:
         try:
