@@ -30,7 +30,8 @@ async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=raw_result["error"])
 
         # ✅ AnalyzeResult 스키마에 맞춰 변환
-        result = AnalyzeResult(
+        result = result = analyze_video(tmp_path, exercise)
+        return AnalyzeResult(
             exercise_name=exercise,
             count_total=raw_result.get("count_total", 0),
             count_incorrect=raw_result.get("count_incorrect", 0),
