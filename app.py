@@ -10,7 +10,7 @@ class AnalyzeResult(BaseModel):
     exercise_name: str
     count_total: int
     count_incorrect: int
-    feedback: str
+    feedback: list[str]
     elapsed_time: float
 
 @app.get("/health")
@@ -30,7 +30,7 @@ async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=raw_result["error"])
 
         # ✅ AnalyzeResult 스키마에 맞춰 변환
-        result = result = analyze_video(tmp_path, exercise)
+        result = analyze_video(tmp_path, exercise)
         return AnalyzeResult(
             exercise_name=exercise,
             count_total=raw_result.get("count_total", 0),
@@ -39,7 +39,6 @@ async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
             elapsed_time=raw_result.get("elapsed_time", 0.0),
         )
 
-        return result
     finally:
         try:
             os.remove(tmp_path)
