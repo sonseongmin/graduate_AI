@@ -127,7 +127,7 @@ def analyze_video(video_path: str, exercise: str):
         msgs.append("자세 인식이 불안정한 프레임이 있었습니다. 카메라 각도/조명을 조정해보세요.")
     if not msgs and count_total > 0:
         msgs.append("좋아요! 전반적으로 안정적인 폼입니다.")
-    feedback = " ".join(msgs) if msgs else ""
+    feedback = msgs
 
     return {
         "exercise_name": exercise_name,
