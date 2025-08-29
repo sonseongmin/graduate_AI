@@ -18,7 +18,8 @@ def health():
     return {"status": "ok"}
 
 @app.post("/analyze", response_model=AnalyzeResult)
-async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
+async def analyze(exercise: str = Form(...), category: str = Form(None), file: UploadFile = File(...)):
+    exercise = exercise or category
     suffix = os.path.splitext(file.filename)[1] or ".mp4"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(await file.read())
