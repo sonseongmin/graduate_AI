@@ -2,10 +2,10 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from pydantic import BaseModel
 import tempfile, os
-from processor import analyze_video
+from processor import analyze_video_init, analyze_video_run
 
 app = FastAPI(title="Fitness AI Server", version="0.1.0")
-
+pose_model = analyze_video_init()
 class AnalyzeResult(BaseModel):
     exercise_name: str
     count_total: int
@@ -25,7 +25,7 @@ async def analyze(exercise: str = Form(...), category: str = Form(None), file: U
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        raw_result = analyze_video(tmp_path, exercise)
+        raw_result = analyze_video_run(tmp_path, exercise)
 
         if "error" in raw_result:
             raise HTTPException(status_code=400, detail=raw_result["error"])
