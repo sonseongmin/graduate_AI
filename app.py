@@ -8,11 +8,9 @@ import mediapipe as mp
 app = FastAPI(title="Fitness AI Server", version="0.1.0")
 
 class AnalyzeResult(BaseModel):
-    exercise_name: str
-    count_total: int
-    count_incorrect: int
-    feedback: list[str]
-    elapsed_time: float
+    exercise_type: str
+    rep_count: int
+    avg_accuracy: int
 
 @app.get("/health")
 def health():
@@ -34,11 +32,9 @@ async def analyze(exercise: str = Form(...), file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail=raw_result["error"])
 
         return AnalyzeResult(
-            exercise_name=raw_result.get("exercise_name", exercise),
-            count_total=raw_result.get("count_total", 0),
-            count_incorrect=raw_result.get("count_incorrect", 0),
-            feedback=raw_result.get("feedback", []),
-            elapsed_time=raw_result.get("elapsed_time", 0.0),
+            exercise_type=raw_result.get("exercise_type", exercise),
+            rep_count=raw_result.get("rep_count", 0),
+            avg_accuracy=raw_result.get("avg_accuracy", 0),
         )
 
     finally:

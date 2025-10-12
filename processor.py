@@ -65,13 +65,13 @@ def analyze_video_run(video_path: str, exercise: str, pose_model) -> dict:
     if exercise == "pushup":
         angle_fn = _pushup_angle
         down_thr, up_thr, strict_min, min_duration_s = 90, 150, 80, 0.3
-        exercise_name = "pushup"
+        exercise_type = "pushup"
     else:
         angle_fn = _squat_angle
         down_thr, up_thr, strict_min, min_duration_s = 80, 165, 70, 0.35
-        exercise_name = "squat"
+        exercise_type = "squat"
 
-    state, count_total, count_incorrect = "up", 0, 0
+    state, rep_count, count_incorrect = "up", 0, 0
     cur_rep_min_angle, rep_start_time = 999.0, None
     too_shallow, too_fast, unstable = 0, 0, 0
 
@@ -104,7 +104,7 @@ def analyze_video_run(video_path: str, exercise: str, pose_model) -> dict:
             cur_rep_min_angle = min(cur_rep_min_angle, ang)
             if ang > up_thr:
                 state = "up"
-                count_total += 1
+                rep_count += 1
                 poor = False
                 if cur_rep_min_angle > strict_min:
                     too_shallow += 1
@@ -125,13 +125,11 @@ def analyze_video_run(video_path: str, exercise: str, pose_model) -> dict:
         msgs.append("동작 속도가 너무 빨랐습니다.")
     if unstable > 0:
         msgs.append("자세 인식이 불안정했습니다. 카메라 각도/조명을 조정해보세요.")
-    if not msgs and count_total > 0:
+    if not msgs and rep_count > 0:
         msgs.append("좋아요! 전반적으로 안정적인 폼입니다.")
 
     return {
-        "exercise_name": exercise_name,
-        "count_total": count_total,
-        "count_incorrect": count_incorrect,
-        "feedback": msgs,
-        "elapsed_time": round(elapsed_time, 3)
+        "exercise_type": exercise_type,
+        "rep_count": rep_count,
+        "avg_accuracy": rep_count,
     }
