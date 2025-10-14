@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://dow
 # ==================================
 # 5️⃣ Copy source code
 # ==================================
+COPY TransRAC_main/models/best_classifier_hybrid.pt /app/models/best_classifier_hybrid.pt
 COPY . .
 
 # ==================================
