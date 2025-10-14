@@ -36,7 +36,7 @@ KP = [
     mp_pose.PoseLandmark.LEFT_WRIST, mp_pose.PoseLandmark.RIGHT_WRIST
 ]
 
-LOW_TH, HIGH_TH, DEBOUNCE_FR = 100, 130, 3
+LOW_TH, HIGH_TH, DEBOUNCE_FR = 125, 140, 3
 TARGET_RANGE = 80.0
 
 cap = cv2.VideoCapture(args.video)

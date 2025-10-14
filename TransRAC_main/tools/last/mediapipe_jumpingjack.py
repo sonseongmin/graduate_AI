@@ -39,7 +39,9 @@ rep_qualities = []
 with mp_pose.Pose(model_complexity=2, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     while True:
         ok, frame = cap.read()
-        if not ok: break
+        if not ok:
+            break
+
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         rgb.flags.writeable = False
         results = pose.process(rgb)
@@ -67,17 +69,18 @@ with mp_pose.Pose(model_complexity=2, min_detection_confidence=0.5, min_tracking
             vis = np.mean([lms[idx].visibility for idx in KP])
 
             rep_min, rep_max = min(rep_min, openness), max(rep_max, openness)
-            rep_vis_sum += vis; rep_frames += 1
+            rep_vis_sum += vis
+            rep_frames += 1
 
             hold_open = hold_open + 1 if openness > OPEN_TH else 0
             hold_close = hold_close + 1 if openness < CLOSE_TH else 0
 
-            print(f"open={openness:.2f} vis={vis:.2f} stage={stage} count={count}")
-
-
-            if hold_close >= DEBOUNCE_FR: stage = "closed"
-            if stage == "closed" and hold_open >= DEBOUNCE_FR:
-                stage = "open"; count += 1
+            # --- 수정된 로직: open → closed 시점에 카운트 ---
+            if hold_open >= DEBOUNCE_FR:
+                stage = "open"
+            if stage == "open" and hold_close >= DEBOUNCE_FR:
+                stage = "closed"
+                count += 1  # ✅ 착지 순간 카운트
                 rep_range = max(0.0, rep_max - rep_min)
                 coverage = min(1.0, rep_range / TARGET_RANGE)
                 quality = 0.5 * coverage + 0.5 * (rep_vis_sum / max(1, rep_frames))
@@ -86,22 +89,24 @@ with mp_pose.Pose(model_complexity=2, min_detection_confidence=0.5, min_tracking
                 rep_vis_sum, rep_frames = 0.0, 0
                 hold_open = hold_close = 0
 
+            print(f"open={openness:.2f} vis={vis:.2f} stage={stage} count={count}")
+
         if args.display:
             image = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
             cv2.putText(image, f"{EXERCISE} count:{count}", (30,60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255,255,255), 2)
-            cv2.imshow("Jumping Jack Counter", cv2.resize(image, (960,540)))
-            if cv2.waitKey(1) & 0xFF == 27: break
+            cv2.imshow("Jumping Jack Counter (Landing Count)", cv2.resize(image, (960,540)))
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
 
-cap.release(); cv2.destroyAllWindows()
+cap.release()
+cv2.destroyAllWindows()
 accuracy = 0.0 if len(rep_qualities) == 0 else float(np.mean(rep_qualities) * 100.0)
 
 # --- 결과 출력 / 저장 ---
 result = {"rep_count": int(count), "avg_accuracy": int(round(accuracy))}
 
 if args.out:
-    # FastAPI에서 --out 인자가 전달되면 결과를 파일로 저장
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False)
 else:
-    # 로컬 테스트 시에는 콘솔에 출력
     print(json.dumps(result, ensure_ascii=False))

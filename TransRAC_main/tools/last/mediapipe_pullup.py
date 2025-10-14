@@ -27,7 +27,7 @@ KP = [
     mp_pose.PoseLandmark.LEFT_ELBOW, mp_pose.PoseLandmark.RIGHT_ELBOW,
     mp_pose.PoseLandmark.LEFT_WRIST, mp_pose.PoseLandmark.RIGHT_WRIST
 ]
-LOW_TH, HIGH_TH, DEBOUNCE_FR = 80, 150, 1
+LOW_TH, HIGH_TH, DEBOUNCE_FR = 120, 138, 1
 TARGET_RANGE = 90.0
 ALPHA, MIN_VIS = 0.5, 0.60
 
