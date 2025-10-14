@@ -60,7 +60,8 @@ tmp_dataset = RepCountADataset(
     num_frames=64,
     normalize=True
 )
-inv_label_map = {v: k for k, v in tmp_dataset.label_map.items()}
+label_map = {"pushup": 0, "squat": 1, "pullup": 2, "jumpjack": 3}
+inv_label_map = {v: k for k, v in label_map.items()}
 
 # -------------------------------------------------------------------
 # Pose 추출 함수
