@@ -1,0 +1,3 @@
+==== Skeleton Generation Fail List (valid) ====
+[OCCLUDED 83.67%] C:\mycla\TransRAC-main\RepCountA\video\valid\train3898.mp4
+[OCCLUDED 70.71%] C:\mycla\TransRAC-main\RepCountA\video\valid\test2349.mp4

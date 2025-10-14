@@ -1,25 +1,36 @@
-# 베이스 이미지 (Python 3.10 이상 권장)
+# ==================================
+# 1️⃣ Base image (Python 3.10)
+# ==================================
 FROM python:3.10-slim
 
-# 작업 디렉토리 설정
+# ==================================
+# 2️⃣ Working directory
+# ==================================
 WORKDIR /app
 
-# 시스템 패키지 업데이트 및 필수 라이브러리 설치
+# ==================================
+# 3️⃣ System dependencies
+# ==================================
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libgl1 \
     libglib2.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
-# requirements 설치
+# ==================================
+# 4️⃣ Python dependencies
+# ==================================
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
-# 소스 복사
+
+# ==================================
+# 5️⃣ Copy source code
+# ==================================
 COPY . .
 
-# 컨테이너 포트
+# ==================================
+# 6️⃣ Expose port & run FastAPI
+# ==================================
 EXPOSE 8001
-
-# FastAPI 실행 명령
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "transRAC-main.tools.last.app:app", "--host", "0.0.0.0", "--port", "8001"]

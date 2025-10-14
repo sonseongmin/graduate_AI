@@ -1,7 +1,31 @@
-fastapi>=0.111.0
-uvicorn[standard]>=0.30.0
-pydantic>=2.5.0
-numpy>=1.24.0
-mediapipe>=0.10.0
-opencv-python>=4.9.0.80
-python-multipart>=0.0.9
+# ---------------------------
+# FastAPI / Uvicorn (API Server)
+# ---------------------------
+fastapi==0.111.0
+uvicorn[standard]==0.30.0
+
+# ---------------------------
+# Core Dependencies
+# ---------------------------
+pydantic==2.5.0
+python-multipart==0.0.9
+
+# ---------------------------
+# Scientific / CV Stack
+# ---------------------------
+numpy>=1.24.0,<2.0.0
+opencv-python==4.9.0.80
+mediapipe==0.10.11
+
+# ---------------------------
+# PyTorch (CPU Build)
+# ---------------------------
+torch==2.3.1+cpu
+torchvision==0.18.1+cpu
+torchaudio==2.3.1+cpu
+# ↑ CUDA 아닌 CPU 전용 빌드 (PyTorch 공식 repo 사용 예정)
+
+# ---------------------------
+# Utility
+# ---------------------------
+tqdm==4.66.4

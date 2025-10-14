@@ -1,0 +1,2 @@
+==== Skeleton Generation Fail List ====
+[OCCLUDED 92.67%] C:\mycla\TransRAC-main\RepCountA\video\train\test1496.mp4
