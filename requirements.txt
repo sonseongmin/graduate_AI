@@ -13,16 +13,16 @@ python-multipart==0.0.9
 # ---------------------------
 # Scientific / CV Stack
 # ---------------------------
-numpy>=1.24.0,<2.0.0
+numpy==2.2.6
 opencv-python==4.9.0.80
-mediapipe==0.10.11
+mediapipe==0.10.14
 
 # ---------------------------
 # PyTorch (CPU Build)
 # ---------------------------
-torch==2.3.1+cpu
+torch==2.7.1+cpu
 torchvision==0.18.1+cpu
-torchaudio==2.3.1+cpu
+torchaudio==2.7.1+cpu
 # ↑ CUDA 아닌 CPU 전용 빌드 (PyTorch 공식 repo 사용 예정)
 
 # ---------------------------

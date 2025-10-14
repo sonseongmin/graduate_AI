@@ -60,8 +60,7 @@ tmp_dataset = RepCountADataset(
     num_frames=64,
     normalize=True
 )
-label_map = {"pushup": 0, "squat": 1, "pullup": 2, "jumpjack": 3}
-inv_label_map = {v: k for k, v in label_map.items()}
+inv_label_map = {v: k for k, v in tmp_dataset.label_map.items()}
 
 # -------------------------------------------------------------------
 # Pose 추출 함수
@@ -163,7 +162,7 @@ async def analyze(file: UploadFile = File(...)):
         )
         print("[DEBUG] Script stdout:", proc.stdout, flush=True)
         print("[DEBUG] Script stderr:", proc.stderr, flush=True)
-        print(f"[DEBUG] Script exit code: {proc.returncode}", flush=True)
+        
 
         if proc.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Script error: {proc.stderr}")
