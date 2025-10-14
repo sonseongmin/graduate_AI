@@ -154,10 +154,15 @@ async def analyze(file: UploadFile = File(...)):
         os.close(out_fd)
 
         script_path = SCRIPTS[ex]
+        print(f"[DEBUG] Running script: {script_path}", flush=True)
+        print(f"[DEBUG] Temp video path: {video_path}", flush=True)
         proc = subprocess.run(
             ["python", script_path, "--video", video_path, "--out", out_json_path],
             capture_output=True, text=True, encoding="utf-8"
         )
+        print("[DEBUG] Script stdout:", proc.stdout, flush=True)
+        print("[DEBUG] Script stderr:", proc.stderr, flush=True)
+        print(f"[DEBUG] Script exit code: {proc.returncode}", flush=True)
 
         if proc.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Script error: {proc.stderr}")
