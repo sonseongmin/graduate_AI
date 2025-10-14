@@ -1,27 +1,30 @@
 import sys, os
-import tempfile, subprocess, json, torch, cv2, mediapipe as mp, numpy as np
+import tempfile, subprocess, json, datetime, torch, cv2, mediapipe as mp, numpy as np
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 
 # ✅ Python 인코딩 설정
-sys.stdout.reconfigure(encoding='utf-8')#a
+sys.stdout.reconfigure(encoding='utf-8')
 
 # ✅ 루트 경로 동적 설정 (transRAC-main 기준)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /app/transRAC-main/tools/last
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../.."))  # /app/transRAC-main
 sys.path.append(ROOT_DIR)
 sys.path.append(os.path.join(ROOT_DIR, "TransRAC_main"))
-
 # ✅ 내부 모듈 임포트
 from models.Transformer_Encoder import HybridLSTMTransformer
+from dataset.RepCountA_Loader import RepCountADataset
 
 # -------------------------------------------------------------------
 # 기본 설정
 # -------------------------------------------------------------------
-app = FastAPI(title="Fitness AI Server", version="1.0.2")
+app = FastAPI(title="Fitness AI Server", version="1.0.0")
 
+# 상대경로 기반 설정 (Docker 컨테이너 내부 /app 기준)
 SCRIPTS_DIR = os.path.join(BASE_DIR)
 MODEL_PATH  = os.path.join(ROOT_DIR, "models", "best_classifier_hybrid.pt")
+CSV_PATH    = os.path.join(ROOT_DIR, "RepCountA", "annotation", "valid_4class.csv")
+NPZ_DIR     = os.path.join(ROOT_DIR, "RepCountA", "npz_all")
 
 SCRIPTS = {
     "pushup":   os.path.join(SCRIPTS_DIR, "mediapipe_pushup.py"),
@@ -31,49 +34,33 @@ SCRIPTS = {
 }
 
 # -------------------------------------------------------------------
-# ✅ CPU 전용 설정 (서버용)
+# 모델 로드
 # -------------------------------------------------------------------
-DEVICE = "cpu"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+NUM_CLASSES = 4
 
 print(f"[INFO] Using device: {DEVICE}")
 print("[INFO] Loading model...")
 
 model = HybridLSTMTransformer(
-    input_dim=132, hidden_dim=256, num_heads=4, num_layers=2, num_classes=4
+    input_dim=132, hidden_dim=256, num_heads=4, num_layers=2, num_classes=NUM_CLASSES
 ).to(DEVICE)
 
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
 
-model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
+model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
 model.eval()
-print("[INFO] Model loaded successfully (CPU mode).")
+print("[INFO] Model loaded successfully.")
 
-# ✅ 라벨맵 고정 (순서 불일치 방지)
-label_map = {"pushup": 0, "squat": 1, "pullup": 2, "jumpjack": 3}
-inv_label_map = {v: k for k, v in label_map.items()}
-
-# -------------------------------------------------------------------
-# ✅ 학습 시 normalize_keypoints 방식 복제
-# -------------------------------------------------------------------
-def normalize_keypoints(keypoints):
-    """
-    keypoints: [T, 33, D] (D=4 if x,y,z,visibility)
-    mid-hip 중심 이동 + 어깨 거리로 스케일 정규화
-    """
-    # mid-hip (23,24번)
-    mid_hip = (keypoints[:, 23, :3] + keypoints[:, 24, :3]) / 2
-    keypoints[:, :, :3] -= mid_hip[:, None, :]
-
-    # 어깨 거리 스케일 보정 (11,12번)
-    shoulder_dist = np.linalg.norm(
-        keypoints[:, 11, :3] - keypoints[:, 12, :3], axis=1
-    )
-    scale = shoulder_dist.mean()
-    if scale > 0:
-        keypoints[:, :, :3] /= scale
-
-    return keypoints
+# 라벨 맵 불러오기
+tmp_dataset = RepCountADataset(
+    npz_dir=NPZ_DIR,
+    annotation_csv=CSV_PATH,
+    num_frames=64,
+    normalize=True
+)
+inv_label_map = {v: k for k, v in tmp_dataset.label_map.items()}
 
 # -------------------------------------------------------------------
 # Pose 추출 함수
@@ -105,11 +92,11 @@ def extract_pose_from_video(video_path, num_frames=64):
     pose.close()
 
     skeleton = np.array(frames, dtype=np.float32)
+    mean = skeleton.mean(axis=(0, 1), keepdims=True)
+    std = skeleton.std(axis=(0, 1), keepdims=True) + 1e-6
+    skeleton = (skeleton - mean) / std
 
-    # ✅ 학습과 동일한 방식으로 normalize
-    skeleton = normalize_keypoints(skeleton)
-
-    # 패딩 or 자르기
+    # 패딩 또는 자르기
     if skeleton.shape[0] < num_frames:
         pad = np.zeros((num_frames - skeleton.shape[0], 33, 4))
         skeleton = np.concatenate([skeleton, pad], axis=0)
@@ -168,16 +155,14 @@ async def analyze(file: UploadFile = File(...)):
 
         script_path = SCRIPTS[ex]
         print(f"[DEBUG] Running script: {script_path}", flush=True)
-
-        # ✅ 동일한 Python 환경에서 실행
+        print(f"[DEBUG] Temp video path: {video_path}", flush=True)
         proc = subprocess.run(
-            [sys.executable, script_path, "--video", video_path, "--out", out_json_path],
+            ["python", script_path, "--video", video_path, "--out", out_json_path],
             capture_output=True, text=True, encoding="utf-8"
         )
-
         print("[DEBUG] Script stdout:", proc.stdout, flush=True)
         print("[DEBUG] Script stderr:", proc.stderr, flush=True)
-        print(f"[DEBUG] Script exit code: {proc.returncode}", flush=True)
+        
 
         if proc.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Script error: {proc.stderr}")
