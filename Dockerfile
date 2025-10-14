@@ -33,4 +33,4 @@ COPY . .
 # 6️⃣ Expose port & run FastAPI
 # ==================================
 EXPOSE 8001
-CMD ["uvicorn", "transRAC-main.tools.last.app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "TransRAC_main.tools.last.app:app", "--host", "0.0.0.0", "--port", "8001"]
