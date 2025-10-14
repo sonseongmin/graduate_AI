@@ -20,7 +20,7 @@ logs/
 *.tar
 *.zip
 *.onnx
-*.pt
+# *.pt
 *.ckpt
 
 # Cache
