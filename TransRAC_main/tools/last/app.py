@@ -9,9 +9,8 @@ sys.stdout.reconfigure(encoding='utf-8')
 # ✅ 루트 경로 동적 설정 (transRAC-main 기준)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /app/transRAC-main/tools/last
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../.."))  # /app/transRAC-main
-
 sys.path.append(ROOT_DIR)
-
+sys.path.append(os.path.join(ROOT_DIR, "TransRAC_main"))
 # ✅ 내부 모듈 임포트
 from models.Transformer_Encoder import HybridLSTMTransformer
 from dataset.RepCountA_Loader import RepCountADataset
