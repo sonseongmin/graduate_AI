@@ -153,7 +153,7 @@ async def analyze(file: UploadFile = File(...)):
 
         script_path = SCRIPTS[ex]
         proc = subprocess.run(
-            [PYTHON_EXE, script_path, "--video", video_path, "--out", out_json_path],
+            [sys.executable, script_path, "--video", video_path, "--out", out_json_path],
             capture_output=True, text=True, encoding="utf-8"
         )
 
@@ -174,7 +174,6 @@ async def analyze(file: UploadFile = File(...)):
         row = {
             "exercise_type": ex,
             "rep_count": rep,
-            "avg_accuracy": acc,
         }
         _log_result(row)
 
