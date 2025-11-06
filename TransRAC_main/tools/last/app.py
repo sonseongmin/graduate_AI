@@ -9,12 +9,6 @@ sys.stdout.reconfigure(encoding='utf-8')
 # ✅ 루트 경로 동적 설정 (transRAC-main 기준)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # /app/transRAC-main/tools/last
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../.."))  # /app/transRAC-main
-sys.path.append(ROOT_DIR)
-sys.path.append(os.path.join(ROOT_DIR, "TransRAC_main"))
-# ✅ 내부 모듈 임포트
-from models.Transformer_Encoder import HybridLSTMTransformer
-from dataset.RepCountA_Loader import RepCountADataset
-
 # -------------------------------------------------------------------
 # 기본 설정
 # -------------------------------------------------------------------
@@ -25,6 +19,13 @@ SCRIPTS_DIR = os.path.join(BASE_DIR)
 MODEL_PATH  = os.path.join(ROOT_DIR, "models", "best_classifier_hybrid.pt")
 CSV_PATH    = os.path.join(ROOT_DIR, "RepCountA", "annotation", "valid_4class.csv")
 NPZ_DIR     = os.path.join(ROOT_DIR, "RepCountA", "npz_all")
+sys.path.append(ROOT_DIR)
+sys.path.append(os.path.join(ROOT_DIR, "TransRAC_main"))
+# ✅ 내부 모듈 임포트
+from models.Transformer_Encoder import HybridLSTMTransformer
+from dataset.RepCountA_Loader import RepCountADataset
+
+
 
 SCRIPTS = {
     "pushup":   os.path.join(SCRIPTS_DIR, "mediapipe_pushup.py"),

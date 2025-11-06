@@ -1,0 +1,114 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+!wget https://s3-geospatial.s3.us-west-2.amazonaws.com/car_sales_data.csv
+
+!ls -tl
+
+import pandas as pd
+
+df = pd.read_csv('/content/drive/MyDrive/2025-2 데이터분석처리 /6주차/car_sales_data.csv')
+
+df.head()
+
+df.info()
+
+df.describe() #숫자 데이터에 대한 통계
+
+df.describe(include = object) #문자 데이터에 대한 통계
+
+from datetime import datetime
+
+# purchase_date 필드를 문자열에서 datetime 타입으로 변환
+df['purchase_date'] = pd.to_datetime(df['purchase_date']) #purchase 열 다 가져와서 날짜 타입으로 바꿔줘
+
+df.info() #3번째 행 Dtype가 datetime으로 바뀜
+
+# 2024년 데이터만 남기기
+df_2024 = df[df['purchase_date'].dt.year == 2024]
+df_2024
+
+# 문제 1: 2024년 브랜드별로 월간 차량 판매 대수 계산
+# 새로운 month라는 필드를 만들고 월 정보를 보존
+df_2024['month'] = df_2024['purchase_date'].dt.month
+df_2024
+
+# 왼편 끝의 인덱스 존재!
+df_2024.head()
+
+# brand_name과 month 필드 정보를 가지고 그룹핑 (groupby)후에 카운트 (size())
+#  - Pandas DataFrame에서 groupby는 멀티 인덱스(brand_name, month)를 갖는 Series를 리턴함.
+#  - 결과를 보면 카운트 필드에는 이름이 없음
+# 이를 이제 Pandas DataFrame으로 바꾸어주어야함
+df_2024 .groupby(['brand_name', 'month']).size()
+
+# Pandas series(인덱스 + 컬럼 하나)가 갖고 있는 multi-index를 없애고 일반 컬럼으로 반환하기 위해서 reset_index를 호출
+# - Pandas의 자료구조들은 index를 갖고 있지만 Spark의 DataFrame은 index가 없음
+# - 그러면서 series의 이름을 sales_count로 지정
+monthly_sales_by_brand = df_2024.groupby(['brand_name','month']).size().reset_index(name = 'sales_count')
+
+monthly_sales_by_brand
+
+# 문제 2: 2024년 가장 많이 팔린 차 5대를 가장 많이 팔린 차부터 찾기
+top_5_cars = df_2024.groupby('cars_name')\
+    .size().reset_index(name = 'sales_count')\
+    .sort_values(by = 'sales_count', ascending = False)
+
+top_5_cars.head(5)
+
+# PySpark 3.5.5이 Google Colab에서 자동으로 설치가 되어있음 (2025.4월 기준)
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import month, count, year, desc
+
+# SparkSession 생성
+spark = SparkSession.builder.appName("CarSalesAnalysis").master("local[*]").getOrCreate()
+
+!pip freeze | grep pyspark
+
+# 판매 정보를 Spark DataFrame으로 로드
+df = spark.read.option("header", "true").csv("/content/drive/MyDrive/2025-2 데이터분석처리 /6주차/car_sales_data.csv")
+
+# Pandas DataFrame과 다르게 Index가 존재하지 않음
+df. show()
+
+df.printSchema()
+
+df.count()
+
+df.rdd.getNumPartitions()
+
+# purchase_date 필드를 문자열에서 datetime 타입으로 변환
+df = df.withColumn("purchase_date", df["purchase_date"].cast("date"))
+
+# 2024년 데이터만 남기기
+df_2024 = df.filter(year("purchase_date") == 2024)
+
+# 문제 1: 2024년 브랜드별로 월간 차량 판매 대수 계산
+# 새로운 month라는 필드를 만들고 월 정보를 보존
+df_2024 = df_2024.withColumn("month", month("purchase_date"))
+
+df_2024.show(5)
+
+# brand_name과 month로 그룹핑하고 카운트한 다음에 이를 sales_count라는 필드로 생성
+# Pandas처럼 Series라는 것이 존재하지 않음
+monthly_sales_by_brand = df_2024.groupBy("brand_name", "month").agg(count("*").alias("sales_count"))
+
+# 앞서 연산들은 이제서야 실행됨 -> 이를 Lazy Execution이라 부름. Pandas는 Eager Execution (바로바로 처리)
+monthly_sales_by_brand.show()
+
+# 결과를 Pandas DataFrame으로 받아와 보기
+# 데이터가 작은 경우에만 가능 (이 경우는 아무 문제 없음)
+pd_df = monthly_sales_by_brand.toPandas()
+
+pd_df.head()
+
+# 문제 2: 2024년 가장 많이 팔린 차 5대를 가장 많이 팔린 차부터 찾기
+top_5_cars = df_2024.groupby('cars_name')\
+    .agg(count('*').alias("sales_count"))\
+    .orderBy(desc("sales_count")).limit(5)
+
+top_5_cars.show()
+
+spark.stop()
+
+
