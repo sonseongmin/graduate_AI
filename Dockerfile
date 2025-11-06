@@ -27,13 +27,13 @@ RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://dow
 # ==================================
 # 5️⃣ Copy source code
 # ==================================
-COPY TransRAC_main/models/best_hybrid_decoderflow_7class.pt /app/models/best_hybrid_decoderflow_7class.pt
-COPY TransRAC_main/RepCountA/annotation/valid_7class.csv /app/RepCountA/annotation/valid_7class.csv
-COPY TransRAC_main/RepCountA/annotation/skeleton_npz  /app/RepCountA/annotation/skeleton_npz 
+COPY TransRAC-main/models/best_hybrid_decoderflow_7class.pt /app/models/best_hybrid_decoderflow_7class.pt
+COPY TransRAC-main/RepCountA/annotation/valid_7class.csv /app/RepCountA/annotation/valid_7class.csv
+COPY TransRAC-main/RepCountA/annotation/skeleton_npz  /app/RepCountA/annotation/skeleton_npz 
 COPY . .
 
 # ==================================
 # 6️⃣ Expose port & run FastAPI
 # ==================================
 EXPOSE 8001
-CMD ["uvicorn", "TransRAC_main.tools.last.app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "TransRAC-main.tools.last.app:app", "--host", "0.0.0.0", "--port", "8001"]
