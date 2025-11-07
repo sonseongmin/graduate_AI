@@ -31,7 +31,7 @@ SCRIPTS = {
     "pushup":     os.path.join(SCRIPTS_DIR, "mediapipe_pushup.py"),
     "squat":      os.path.join(SCRIPTS_DIR, "mediapipe_squat.py"),
     "pullup":     os.path.join(SCRIPTS_DIR, "mediapipe_pullup.py"),
-    "jumpjack":   os.path.join(SCRIPTS_DIR, "mediapipe_jumpingjack.py"),
+    "jumpingjack":   os.path.join(SCRIPTS_DIR, "mediapipe_jumpingjack.py"),
     "frontraise": os.path.join(SCRIPTS_DIR, "mediapipe_frontraise.py"),
     "benchpress": os.path.join(SCRIPTS_DIR, "mediapipe_benchpress.py"),
     "situp":      os.path.join(SCRIPTS_DIR, "mediapipe_situp.py"),
