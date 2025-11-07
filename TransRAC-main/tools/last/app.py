@@ -141,6 +141,15 @@ async def analyze(file: UploadFile = File(...)):
     try:
         # 1️⃣ 운동 분류
         ex, conf = predict_exercise(video_path)
+
+        # ✅ 백엔드 Enum / SCRIPTS 기준에 맞게 교정
+        label_map = {
+            "jumpjack": "jumpingjack",
+            "jumping_jack": "jumpingjack"
+        }
+        if ex in label_map:
+            ex = label_map[ex]
+
         print(f"🏋️ 예측된 운동: {ex} (신뢰도 {conf*100:.2f}%)")
 
         if ex not in SCRIPTS:
